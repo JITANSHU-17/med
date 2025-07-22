@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Medicine Store</title>
+  <style>
+    :root {
+      --primary-color: #313233;
+      --accent-color: #4caf50;
+      --light-bg: #f5f9ff;
+      --dark-bg: #121212;
+      --light-text: #333;
+      --dark-text: #f1f1f1;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      --border-radius: 10px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--light-text);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: var(--primary-color);
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--card-shadow);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 1.2rem;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #ffeb3b;
+    }
+
+    .dark-toggle {
+      background: #ffffff22;
+      color: white;
+      padding: 6px 12px;
+      border: 1px solid white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .dark-toggle:hover {
+      background: #ffffff44;
+    }
+
+    .page-header {
+      text-align: center;
+      padding: 1.5rem 1rem 1rem;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      transition: background 0.3s ease;
+    }
+
+    body.dark .page-header {
+      background: linear-gradient(to right, #1e1e1e, #2b2b2b);
+    }
+
+    .page-header h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    body.dark .page-header p {
+      color: #ccc;
+    }
+
+    .banner-container {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      width: 100%;
+      scroll-behavior: smooth;
+    }
+
+    .banner-container img {
+      height: 300px;
+      width: 100vw;
+      object-fit: cover;
+      border-radius: 0;
+      scroll-snap-align: start;
+      flex: 0 0 100%;
+      box-shadow: var(--card-shadow);
+    }
+
+    .search-bar {
+      max-width: 600px;
+      margin: 2rem auto 1rem;
+      padding: 0 2rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid #ccc;
+    }
+
+    body.dark .search-bar input {
+      background-color: #2c2c2c;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .alphabet-list {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    .alphabet-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .alphabet-group h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    .medicine-item {
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .medicine-item span {
+      font-weight: 500;
+    }
+
+    .medicine-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .medicine-actions input {
+      width: 50px;
+      padding: 4px;
+    }
+
+    .buy-btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .buy-btn:hover {
+      background-color: #45a049;
+    }
+
+    @media (max-width: 600px) {
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .nav-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">💊 MedStore</div>
+    <div class="nav-controls">
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="login.html">Admin Login</a></li>
+      </ul>
+      <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+    </div>
+  </nav>
+
+  <header class="page-header">
+    <h1>Available Medicines</h1>
+    <p>Choose from a wide range of essential medicines</p>
+  </header>
+
+  <div class="banner-container" id="banner">
+    <img src="uploads/banner1.jpg" alt="Banner 1">
+    <img src="uploads/banner2.jpg" alt="Banner 2">
+    <img src="uploads/banner3.jpg" alt="Banner 3">
+    <img src="uploads/banner4.jpg" alt="Banner 4">
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search medicines...">
+  </div>
+
+  <div id="medicine-list" class="alphabet-list"></div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    function buyProduct(name, price, quantity, stock) {
+      const userPhone = prompt("Please enter your phone number to proceed:");
+      if (!userPhone || userPhone.trim() === '') {
+        alert("Phone number is required to place an order.");
+        return;
+      }
+      const phoneNumber = '919876543210';
+      const message = `Hello, I want to buy the following medicine:%0AProduct: ${name}%0APrice: ₹${price}%0AQuantity: ${quantity}%0APhone: ${userPhone}`;
+      window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+    }
+
+    window.onload = () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+      }
+
+      const banner = document.getElementById('banner');
+      let scrollAmount = 0;
+      const slideWidth = window.innerWidth;
+
+      setInterval(() => {
+        scrollAmount += slideWidth;
+        if (scrollAmount >= banner.scrollWidth) {
+          scrollAmount = 0;
+        }
+        banner.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+      }, 4000);
+    };
+
+    fetch('/products')
+      .then(res => res.json())
+      .then(products => {
+        const grouped = {};
+        products.forEach(p => {
+          const letter = p.name[0].toUpperCase();
+          if (!grouped[letter]) grouped[letter] = [];
+          grouped[letter].push(p);
+        });
+
+        const sortedLetters = Object.keys(grouped).sort();
+        const container = document.getElementById('medicine-list');
+
+        function renderList(filter = '') {
+          container.innerHTML = '';
+          sortedLetters.forEach(letter => {
+            const filteredMeds = grouped[letter].filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+            if (filteredMeds.length > 0) {
+              const group = document.createElement('div');
+              group.className = 'alphabet-group';
+              group.innerHTML = `<h3>${letter}</h3>`;
+              filteredMeds.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'medicine-item';
+                item.innerHTML = `
+                  <span>${p.name}</span>
+                  <span>₹${p.price}</span>
+                  <div class="medicine-actions">
+                    <input type="number" min="1" max="${p.quantity}" value="1" id="qty-${p.id}" />
+                    <button class="buy-btn" onclick="buyProduct('${p.name}', ${p.price}, document.getElementById('qty-${p.id}').value, ${p.quantity})">Buy (${p.quantity})</button>
+                  </div>
+                `;
+                group.appendChild(item);
+              });
+              container.appendChild(group);
+            }
+          });
+        }
+
+        renderList();
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+          renderList(e.target.value);
+        });
+      });
+  </script>
+</body>
+</html>
