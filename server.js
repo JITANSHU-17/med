@@ -5,7 +5,7 @@ const session = require('express-session');
 const mysql = require('mysql2/promise');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Database config
 const dbConfig = {
