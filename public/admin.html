@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    /* Your existing styles (unchanged) */
+    /* [ Same styles as before – not changed ] */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -165,6 +166,40 @@
       border: 1px solid #ccc;
     }
 
+    .order-section {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 30px;
+    }
+
+    .order-toggle {
+      background-color: #6c63ff;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .order-list {
+      display: none;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .order-item {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+    }
+
     @media (max-width: 600px) {
       .top-nav {
         flex-direction: column;
@@ -186,12 +221,8 @@
 </head>
 <body>
   <div class="top-nav">
-    <a href="index.html">
-      <button>🏠 Home</button>
-    </a>
-    <a href="/logout">
-      <button>🚪 Logout</button>
-    </a>
+    <a href="index.html"><button>🏠 Home</button></a>
+    <a href="/logout"><button>🚪 Logout</button></a>
   </div>
 
   <h1>Welcome Back, Admin</h1>
@@ -205,84 +236,197 @@
   </form>
 
   <div class="search-input">
-    <input type="text" id="searchBox" placeholder="🔍 Search products by name...">
+    <input type="text" id="searchBox" placeholder="🔍 Search products"></input>
+  </div>
+
+  <div class="order-section">
+    <button class="order-toggle" onclick="toggleOrders()">📦 Show Orders</button>
+    <div class="order-list" id="orderList"></div>
   </div>
 
   <div class="product-list" id="productList"></div>
 
-  <script>
-    const productList = document.getElementById("productList");
-    const searchBox = document.getElementById("searchBox");
+<script>
+  const productList = document.getElementById("productList");
+  const searchBox = document.getElementById("searchBox");
+  const orderList = document.getElementById("orderList");
 
-    async function loadProducts() {
-      const res = await fetch("/products");
-      const products = await res.json();
-      renderProducts(products);
-    }
+  async function loadProducts() {
+    const res = await fetch("/products");
+    const products = await res.json();
+    renderProducts(products);
+  }
 
-    function renderProducts(products) {
-      const filter = searchBox.value.toLowerCase();
-      productList.innerHTML = "";
-
-      products
-        .filter(p => p.name.toLowerCase().includes(filter))
-        .forEach(p => {
-          const div = document.createElement("div");
-          div.className = "product-item";
-          div.innerHTML = `
-            <div class="info-row">
-              <span><strong>Name:</strong> <input value="${p.name}" id="name-${p.id}"/></span>
-              <span><strong>Price:</strong> ₹<input type="number" value="${p.price}" id="price-${p.id}" style="width:80px;"/></span>
-              <span><strong>Qty:</strong> <input type="number" value="${p.quantity}" id="quantity-${p.id}" style="width:60px;"/></span>
-            </div>
-            <div class="product-actions">
-              <button class="edit-btn" onclick="editProduct(${p.id})">✏️ Save</button>
-              <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
-            </div>
-          `;
-          productList.appendChild(div);
-        });
-    }
-
-    async function editProduct(id) {
-      const name = document.getElementById(`name-${id}`).value;
-      const price = document.getElementById(`price-${id}`).value;
-      const quantity = document.getElementById(`quantity-${id}`).value;
-
-      await fetch(`/edit-product/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price, quantity }),
-        credentials: 'include'
+  function renderProducts(products) {
+    const filter = searchBox.value.toLowerCase();
+    productList.innerHTML = "";
+    products
+      .filter(p => p.name.toLowerCase().includes(filter))
+      .forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product-item";
+        div.innerHTML = `
+          <div class="info-row">
+            <span><strong>Name:</strong> <input value="${p.name}" id="name-${p.id}"/></span>
+            <span><strong>Price:</strong> ₹<input type="number" value="${p.price}" id="price-${p.id}" style="width:80px;"/></span>
+            <span><strong>Qty:</strong> <input type="number" value="${p.quantity}" id="quantity-${p.id}" style="width:60px;"/></span>
+          </div>
+          <div class="product-actions">
+            <button class="edit-btn" onclick="editProduct(${p.id})">✏️ Save</button>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+          </div>
+        `;
+        productList.appendChild(div);
       });
+  }
 
-      loadProducts();
-    }
-
-    async function deleteProduct(id) {
-      if (!confirm("Are you sure you want to delete this product?")) return;
-
-      const res = await fetch(`/delete-product/${id}`, {
-        method: "DELETE",
-        credentials: 'include'
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        loadProducts();
-      } else {
-        alert("❌ Failed to delete product");
-      }
-    }
-
-    searchBox.addEventListener("input", loadProducts);
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("added") === "true") {
-      alert("✅ Product added successfully!");
-    }
-
+  async function editProduct(id) {
+    await fetch(`/edit-product/${id}`, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"},
+      credentials: 'include',
+      body: JSON.stringify({
+        name: document.getElementById(`name-${id}`).value,
+        price: document.getElementById(`price-${id}`).value,
+        quantity: document.getElementById(`quantity-${id}`).value
+      })
+    });
     loadProducts();
-  </script>
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm("Delete this product?")) return;
+    const res = await fetch(`/delete-product/${id}`, {method: "DELETE", credentials: 'include'});
+    res.ok && loadProducts();
+  }
+
+  function toggleOrders() {
+    orderList.style.display = orderList.style.display === "block" ? "none" : (loadOrders(), "block");
+  }
+
+  async function loadOrders() {
+    const res = await fetch("/orders");
+    const orders = await res.json();
+
+    // Group by phone + order_time
+    const grouped = {};
+    orders.forEach(o => {
+      const key = `${o.phone}|${o.created_at}`;
+      (grouped[key] = grouped[key] || []).push(o);
+    });
+
+    orderList.innerHTML = `<h3>Total Groups: ${Object.keys(grouped).length}</h3>`;
+    Object.entries(grouped).forEach(([key, group]) => {
+      const [phone, created_at] = key.split("|");
+      const totalSum = group.reduce((a,b)=>a + b.price*b.quantity,0);
+
+      const div = document.createElement("div");
+      div.className = "order-item";
+
+      let html = `
+        <strong>📞 Phone:</strong> ${phone} &nbsp;|&nbsp;
+        <strong>🕒 Time:</strong> ${new Date(created_at).toLocaleString()}<br/><br/>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><th align="left">Medicine</th><th>Qty</th><th>Unit ₹</th><th>Total ₹</th></tr>`;
+      group.forEach(it => {
+        html += `<tr>
+                   <td>${it.medicine_name}</td>
+                   <td align="center">${it.quantity}</td>
+                   <td align="right">${it.price}</td>
+                   <td align="right">${it.quantity * it.price}</td>
+                 </tr>`;
+      });
+      html += `</table><br/>
+               <strong>Group Total: ₹${totalSum}</strong>
+               <div style="margin-top:8px;">
+                 <button class="edit-btn" onclick='downloadGroupReceipt("${encodeURIComponent(key)}")'>🧾 Receipt</button>
+                 <button class="delete-btn" onclick='deleteGroup("${encodeURIComponent(key)}")'>🗑️ Delete Group</button>
+               </div>`;
+
+      div.innerHTML = html;
+      orderList.appendChild(div);
+    });
+  }
+
+ // Robust and clean deleteGroup function
+function deleteGroup(keyEnc) {
+  try {
+    const key = decodeURIComponent(keyEnc);
+    const [phone, created_at_raw] = key.split("|");
+
+    if (!phone || !created_at_raw) {
+      console.error("Invalid key format:", key);
+      return alert("Error: Invalid delete key");
+    }
+
+    // Convert created_at_raw to MySQL format: YYYY-MM-DD HH:mm:ss
+    const parsedDate = new Date(created_at_raw);
+    if (isNaN(parsedDate)) {
+      console.error("Invalid date format in key:", created_at_raw);
+      return alert("Error: Invalid date format");
+    }
+
+    const pad = (n) => (n < 10 ? '0' + n : n);
+    const mysqlTime = `${parsedDate.getFullYear()}-${pad(parsedDate.getMonth() + 1)}-${pad(parsedDate.getDate())} ${pad(parsedDate.getHours())}:${pad(parsedDate.getMinutes())}:${pad(parsedDate.getSeconds())}`;
+
+    const url = `/delete-order-group?phone=${encodeURIComponent(phone)}&time=${encodeURIComponent(mysqlTime)}`;
+
+    fetch(url, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.message || 'Delete failed');
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      alert(data.message || "Group deleted successfully");
+      loadOrders(); // ✅ Refresh orders after deletion
+    })
+    .catch(error => {
+      console.error("Delete failed:", error);
+      alert("Failed to delete order group: " + error.message);
+    });
+
+  } catch (error) {
+    console.error("deleteGroup parsing error:", error);
+    alert("Something went wrong while processing the delete request.");
+  }
+}
+
+  function downloadGroupReceipt(keyEnc) {
+    const key = decodeURIComponent(keyEnc);
+    fetch(`/orders?groupKey=${key}`)
+      .then(res => res.json())
+      .then(group => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const [phone, orderTime] = key.split("|");
+        const date = new Date(orderTime).toLocaleString();
+
+        doc.setFontSize(16);
+        doc.text("🧾 Group Receipt", 20, 20);
+        doc.setFontSize(12);
+        doc.text(`Phone: ${phone}`, 20, 30);
+        doc.text(`Time: ${date}`, 20, 40);
+        let y=50;
+        let total=0;
+        group.forEach(item=>{
+          const line = `${item.medicine_name} x ${item.quantity} = ₹${item.quantity*item.price}`;
+          doc.text(line, 20, y);
+          total+=item.quantity*item.price; y+=10;
+        });
+        doc.text(`Total: ₹${total}`, 20, y+10);
+        doc.save(`receipt_${phone}_${new Date(orderTime).getTime()}.pdf`);
+      });
+  }
+
+  searchBox.addEventListener("input", loadProducts);
+  loadProducts();
+</script>
 </body>
 </html>

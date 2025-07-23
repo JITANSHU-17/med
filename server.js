@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
-const mysql = require('mysql2/promise'); // ✅ use mysql2 with async/await
+const mysql = require('mysql2/promise');
 
 const app = express();
 const PORT = 3000;
@@ -15,10 +15,7 @@ const dbConfig = {
   database: 'sql10791237'
 };
 
-// Connect once and reuse pool
 const dbPool = mysql.createPool(dbConfig);
-
-// Static Paths
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 // Middleware
@@ -54,6 +51,68 @@ app.get('/products', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
+app.get('/orders', checkAdmin, async (req, res) => {
+  try {
+    const [rows] = await dbPool.query('SELECT * FROM orders ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    console.error('Failed to fetch orders:', err);
+    res.status(500).json({ error: 'Failed to load orders' });
+  }
+});
+
+app.post('/order', (req, res) => {
+  try {
+    const { name, price, quantity, userPhone } = req.body;
+
+    if (!name || !price || !quantity || !userPhone) {
+      return res.status(400).json({ success: false, message: "Missing fields" });
+    }
+
+    const sql = 'INSERT INTO orders (medicine_name, price, quantity, phone) VALUES (?, ?, ?, ?)';
+    dbPool.query(sql, [name, price, quantity, userPhone], (err, result) => {
+      if (err) {
+        console.error("MySQL error:", err);
+        return res.status(500).json({ success: false, message: "Database error" });
+      }
+      return res.json({ success: true });
+    });
+  } catch (err) {
+    console.error("Unhandled error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.delete('/delete-order-group', (req, res) => {
+  const { phone, time } = req.query;
+
+  // ✅ Step 1: Validate query parameters
+  if (!phone || !time) {
+    return res.status(400).json({ success: false, message: 'Missing phone or time parameter' });
+  }
+
+  // ✅ Step 2: Run parameterized SQL query to prevent SQL injection
+  const deleteQuery = 'DELETE FROM orders WHERE phone = ? AND created_at = ?';
+
+  dbPool.query(deleteQuery, [phone, time], (err, result) => {
+    if (err) {
+      console.error("❌ SQL Delete Error:", err);
+      return res.status(500).json({ success: false, message: 'Internal server error while deleting data' });
+    }
+
+    // ✅ Step 3: Check if any rows were actually deleted
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'No matching order group found for deletion' });
+    }
+
+    // ✅ Step 4: Send success response
+    console.log("✅ Order group deleted successfully.");
+    return res.json({ success: true, message: 'Order group deleted successfully' });
+  });
+});
+
+
 
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'login.html'));
@@ -125,7 +184,6 @@ app.put('/edit-product/:id', checkAdmin, async (req, res) => {
   }
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running at: http://localhost:${PORT}`);
 });
