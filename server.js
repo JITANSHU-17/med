@@ -7,7 +7,10 @@ const mysql = require('mysql2/promise');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database config
+// ✅ Corrected HOST binding for Railway (DO NOT bind to localhost)
+// app.listen will automatically listen on 0.0.0.0 for Railway
+
+// ✅ MySQL connection config
 const dbConfig = {
   host: 'sql10.freesqldatabase.com',
   user: 'sql10791237',
@@ -44,7 +47,7 @@ function checkAdmin(req, res, next) {
 // Routes
 
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.send("✅ Server is live and working on Railway!");
 });
 
 app.get('/products', async (req, res) => {
@@ -92,12 +95,10 @@ app.post('/order', (req, res) => {
 app.delete('/delete-order-group', (req, res) => {
   const { phone, time } = req.query;
 
-  // ✅ Step 1: Validate query parameters
   if (!phone || !time) {
     return res.status(400).json({ success: false, message: 'Missing phone or time parameter' });
   }
 
-  // ✅ Step 2: Run parameterized SQL query to prevent SQL injection
   const deleteQuery = 'DELETE FROM orders WHERE phone = ? AND created_at = ?';
 
   dbPool.query(deleteQuery, [phone, time], (err, result) => {
@@ -106,18 +107,14 @@ app.delete('/delete-order-group', (req, res) => {
       return res.status(500).json({ success: false, message: 'Internal server error while deleting data' });
     }
 
-    // ✅ Step 3: Check if any rows were actually deleted
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'No matching order group found for deletion' });
     }
 
-    // ✅ Step 4: Send success response
     console.log("✅ Order group deleted successfully.");
     return res.json({ success: true, message: 'Order group deleted successfully' });
   });
 });
-
-
 
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'login.html'));
@@ -190,5 +187,5 @@ app.put('/edit-product/:id', checkAdmin, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at: http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
