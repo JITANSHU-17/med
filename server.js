@@ -42,6 +42,11 @@ function checkAdmin(req, res, next) {
 }
 
 // Routes
+
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
 app.get('/products', async (req, res) => {
   try {
     const [rows] = await dbPool.query('SELECT * FROM products');
