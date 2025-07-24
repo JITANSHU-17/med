@@ -12,10 +12,10 @@ const PORT = process.env.PORT || 3000;
 
 // ✅ MySQL connection config
 const dbConfig = {
-  host: 'sql10.freesqldatabase.com',
-  user: 'sql10791237',
-  password: 'SzPWYv2Lcw',
-  database: 'sql10791237'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 };
 
 const dbPool = mysql.createPool(dbConfig);
