@@ -186,7 +186,11 @@ app.put('/edit-product/:id', checkAdmin, async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+try {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+} catch (error) {
+  console.error("Server failed to start:", error);
+}
 
