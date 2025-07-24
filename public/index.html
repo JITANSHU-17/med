@@ -154,8 +154,8 @@
     .checkout-btn {
       display: block;
       margin: 1rem auto 0;
-      background-color: lightblue;
-      color:gray;
+      background-color: whitesmoke;
+      color:black;
       padding: 12px 18px;
       font-size: 1rem;
       border: none;
@@ -165,7 +165,7 @@
     }
 
     .checkout-btn:hover {
-      background-color:lightcyan;
+      background-color:greenyellow;
     }
 
     .alphabet-list {
@@ -210,7 +210,7 @@
 
     .buy-btn {
       background-color: lightblue;
-      color: gray;
+      color:black;
       padding: 5px 10px;
       border: none;
       border-radius: 6px;
@@ -255,13 +255,25 @@
       margin-bottom: 10px;
       border-bottom: 1px solid #ccc;
       padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #cart-sidebar li button {
+      background-color: lightcoral;
+      color: white;
+      border: none;
+      padding: 4px 6px;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
     .buy-btn-final {
       width: 100%;
       margin-top: 15px;
       background-color: lightblue;
-      color: gray;
+      color: black;
       padding: 10px;
       font-size: 1rem;
       border: none;
@@ -296,16 +308,6 @@
       box-shadow: var(--card-shadow);
       z-index: 2000;
       text-align: center;
-    }
-
-    .modal-alert button {
-      margin-top: 10px;
-      padding: 6px 12px;
-      background: #f44336;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
     }
 
     body.dark .modal-alert {
@@ -366,7 +368,6 @@
 
   <div id="modal" class="modal-alert" style="display: none;">
     <div id="modal-message"></div>
-    <button onclick="closeModal()">Cancel</button>
   </div>
 
   <script>
@@ -397,12 +398,13 @@
     function showModal(message) {
       modalActive = true;
       document.getElementById('modal-message').textContent = message;
-      document.getElementById('modal').style.display = 'block';
-    }
+      const modal = document.getElementById('modal');
+      modal.style.display = 'block';
 
-    function closeModal() {
-      modalActive = false;
-      document.getElementById('modal').style.display = 'none';
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modalActive = false;
+      }, 2000);
     }
 
     function toggleCartSidebar() {
@@ -422,11 +424,19 @@
         list.innerHTML = '<li>Your cart is empty</li>';
         return;
       }
-      cart.forEach(item => {
+      cart.forEach((item, index) => {
         const li = document.createElement('li');
-        li.textContent = `${item.name} ×${item.quantity} – ₹${item.price}`;
+        li.innerHTML = `
+          ${item.name} ×${item.quantity} – ₹${item.price}
+          <button onclick="removeFromCart(${index})">🗑️</button>
+        `;
         list.appendChild(li);
       });
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCartItems();
     }
 
     function performCheckout() {
