@@ -228,7 +228,7 @@
   <h1>Welcome Back, Admin</h1>
   <h4>Add Products</h4>
 
-  <form action="/add-product" method="POST">
+  <form action="https://parseapi.back4app.com/addProduct" method="POST">
     <input type="text" name="name" placeholder="Medicine Name" required />
     <input type="number" name="price" placeholder="Price (in ₹)" required />
     <input type="number" name="quantity" placeholder="Quantity" required />
@@ -252,7 +252,7 @@
   const orderList = document.getElementById("orderList");
 
   async function loadProducts() {
-    const res = await fetch("/products");
+    const res = await fetch("https://parseapi.back4app.com/getProduct");
     const products = await res.json();
     renderProducts(products);
   }
@@ -281,7 +281,7 @@
   }
 
   async function editProduct(id) {
-    await fetch(`/edit-product/${id}`, {
+    await fetch(`https://parseapi.back4app.com/updateProduct/${id}`, {
       method: "PUT",
       headers: {"Content-Type": "application/json"},
       credentials: 'include',
@@ -296,7 +296,7 @@
 
   async function deleteProduct(id) {
     if (!confirm("Delete this product?")) return;
-    const res = await fetch(`/delete-product/${id}`, {method: "DELETE", credentials: 'include'});
+    const res = await fetch(`https://parseapi.back4app.com/deleteProduct/${id}`, {method: "DELETE", credentials: 'include'});
     res.ok && loadProducts();
   }
 
@@ -305,7 +305,7 @@
   }
 
   async function loadOrders() {
-    const res = await fetch("/orders");
+    const res = await fetch("https://parseapi.back4app.com/getOrders");
     const orders = await res.json();
 
     // Group by phone + order_time
@@ -369,7 +369,7 @@ function deleteGroup(keyEnc) {
     const pad = (n) => (n < 10 ? '0' + n : n);
     const mysqlTime = `${parsedDate.getFullYear()}-${pad(parsedDate.getMonth() + 1)}-${pad(parsedDate.getDate())} ${pad(parsedDate.getHours())}:${pad(parsedDate.getMinutes())}:${pad(parsedDate.getSeconds())}`;
 
-    const url = `/delete-order-group?phone=${encodeURIComponent(phone)}&time=${encodeURIComponent(mysqlTime)}`;
+    const url = `https://parseapi.back4app.com/deleteOrderGroup?phone=${encodeURIComponent(phone)}&time=${encodeURIComponent(mysqlTime)}`;
 
     fetch(url, {
       method: 'DELETE',
@@ -400,7 +400,7 @@ function deleteGroup(keyEnc) {
 
   function downloadGroupReceipt(keyEnc) {
     const key = decodeURIComponent(keyEnc);
-    fetch(`/orders?groupKey=${key}`)
+    fetch(`https://parseapi.back4app.com/getOrders?groupKey=${key}`)
       .then(res => res.json())
       .then(group => {
         const { jsPDF } = window.jspdf;
