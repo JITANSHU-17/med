@@ -451,7 +451,7 @@
       }
       let success = 0, error = 0;
       cart.forEach(item => {
-        fetch('/order', {
+        fetch('https://parseapi.back4app.com/placeOrder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -483,7 +483,7 @@
       }, 4000);
     };
 
-    fetch('/products')
+    fetch('https://parseapi.back4app.com/getProducts')
       .then(res => res.json())
       .then(products => {
         const grouped = {};
